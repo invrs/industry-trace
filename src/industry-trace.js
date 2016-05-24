@@ -24,11 +24,15 @@ function display(id, level=0) {
   let trace = traces[id]
   let indent = ""
   
-  for (let x; x < level; x++) {
-    indent += "\t"
+  for (let x = 1; x < level; x++) {
+    indent += "  "
   }
   
-  console.log(indent, trace.name)
+  if (level > 0) {
+    indent += "-> "
+  }
+
+  console.log(`${indent}${trace.name}`)
 
   level++
   
@@ -39,28 +43,41 @@ function display(id, level=0) {
   delete traces[id]
 }
 
+function getTraceID(args) {
+  let trace_id
+  args.forEach(({ _trace_id }) => {
+    if (_trace_id) trace_id = _trace_id
+  })
+  return trace_id
+}
+
 function patch(ignore, type) {
   for (let name in this.functions()) {
     if (ignore[type].indexOf(name) == -1) {
       let fn = this[name]
-      this[name] = args => {
-        let parent_id = args._trace_id
-        let id = args._trace_id = Math.random()
-
-        traces[id] = { args, name, children: [] }
-        
-        let output = fn.bind(this)(args)
-
-        if (parent_id) {
-          traces[parent_id].children.push(id)
-        } else {
-          output.then(value => display(id))
-        }
-
-        return output
-      }
+      this[name] = (...args) =>
+        runAndReturn({ args, bind_to: this, fn, name })
     }
   }
+}
+
+function runAndReturn({ args, bind_to, fn, name }) {
+  let parent_id = getTraceID(args)
+  let id = Math.random()
+
+  args.push({ _trace_id: id })
+  traces[id] = { name, children: [] }
+  
+  let output = fn.bind(bind_to)(...args)
+  delete output._trace_id
+
+  if (parent_id) {
+    traces[parent_id].children.push(id)
+  } else {
+    output.then(value => display(id))
+  }
+
+  return output
 }
 
 export let trace = Class =>
