@@ -1,25 +1,5 @@
 let traces = {}
 
-// 0 ->
-//   1 -> 2
-//   3 -> 4
-
-// 0: {
-//   args: {},
-//   promise: <Promise>,
-//   children: [ 1, 3 ]
-// }
-
-// 1: {
-//   args: {},
-//   children: [ 2 ]
-// }
-
-// 3: {
-//   args: {},
-//   children: [ 4 ]
-// }
-
 function display(id, level=0) {
   let trace = traces[id]
   let indent = ""
