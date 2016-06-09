@@ -1,6 +1,6 @@
 let traces = {}
 
-function display(id, level=0) {
+function display(id, level=0, string="") {
   let trace = traces[id]
   let indent = ""
   
@@ -12,15 +12,16 @@ function display(id, level=0) {
     indent += "-> "
   }
 
-  console.log(`${indent}${trace.name}`)
-
+  string += `${indent}${trace.name}\n`
   level++
   
   for (let child of trace.children) {
-    display(child, level)
+    string = display(child, level, string)
   }
 
   delete traces[id]
+
+  return string
 }
 
 function getTraceID(args) {
@@ -54,7 +55,7 @@ function runAndReturn({ args, bind_to, fn, name }) {
   if (parent_id) {
     traces[parent_id].children.push(id)
   } else {
-    output.then(value => display(id))
+    output.then(value => console.log(display(id)))
   }
 
   return output
