@@ -26,8 +26,8 @@ function display(id, level=0, string="") {
 
 function getTraceID(args) {
   let trace_id
-  args.forEach(({ _trace_id }) => {
-    if (_trace_id) trace_id = _trace_id
+  args.forEach(arg => {
+    if (arg && arg._trace_id) trace_id = arg._trace_id
   })
   return trace_id
 }
